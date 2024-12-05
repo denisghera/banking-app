@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.SignupController">
+    <TextField fx:id="usernameField" promptText="Username" />
+    <TextField fx:id="emailField" promptText="Email" />
+    <PasswordField fx:id="passwordField" promptText="Password" />
+    <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
+    <Button text="Sign Up" onAction="#handleSignup" />
+    <Button text="Back to Login" onAction="#goToLoginPage" />
+</VBox>

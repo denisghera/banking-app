@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.LoginController">
+    <TextField fx:id="usernameField" promptText="Username" />
+    <PasswordField fx:id="passwordField" promptText="Password" />
+    <Button text="Login" onAction="#handleLogin" />
+    <Hyperlink text="Don't have an account? Sign up here." onAction="#goToSignup"/>
+</VBox>

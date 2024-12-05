@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.OperationsController">
+    <Label text="Operations" style="-fx-font-size: 20px;"/>
+    <Button text="Deposit" onAction="#goToDeposit"/>
+    <Button text="Withdraw" onAction="#goToWithdraw"/>
+    <Button text="Transfer" onAction="#goToTransfer"/>
+    <Button text="Apply for Life Insurance" onAction="#goToLifeInsurance"/>
+    <Button text="Create Round-Up Account" onAction="#goToRoundUp"/>
+</VBox>
