@@ -8,15 +8,21 @@ import ro.uvt.dp.services.Mediator;
 
 public class Client {
 	public static final int MAX_ACCOUNTS = 5;
+	private String username;
 	private String name;
 	private String address;
+	private String email;
+	private String bankID;
 	private Mediator mediator;
 	private final List<Account> accounts;
 	private final StringBuilder personalReport = new StringBuilder();
 
-	public Client(String name, String address, List<Account> accounts) {
+	public Client(String username, String name, String address, String email, String bankID, List<Account> accounts) {
+		this.username = username;
 		this.name = name;
 		this.address = address;
+		this.email = email;
+		this.bankID = bankID;
 		this.accounts = new ArrayList<>(accounts);
 	}
 
@@ -35,7 +41,7 @@ public class Client {
 		if (accountToRemove == null) {
 			throw new IllegalArgumentException("Account with code " + accountCode + " not found.");
 		}
-		if(accountToRemove.amount > 0) {
+		if (accountToRemove.amount > 0) {
 			throw new IllegalStateException("Account still has money in it. Please retrieve the whole sum.");
 		}
 		personalReport.append("\tAccount ").append(accountCode).append(" was closed!\n");
@@ -61,17 +67,27 @@ public class Client {
 	public int getAccountsSize() {
 		return accounts.size();
 	}
+
+	public String getUsername() {
+		return username;
+	}
 	public String getName() {
 		return name;
 	}
 	public String getAddress() {
 		return address;
 	}
+	public String getEmail() {
+		return email;
+	}
+	public String getBankID() {
+		return bankID;
+	}
 	public String getPersonalReport() {
 		return personalReport.toString();
 	}
 	@Override
 	public String toString() {
-		return "\n\tClient [name=" + name + ", address=" + address + ", accounts=" + accounts + "]";
+		return "\n\tClient [username=" + username + ", name=" + name + ", address=" + address + ", email=" + email + ", bankID=" + bankID + ", accounts=" + accounts + "]";
 	}
 }

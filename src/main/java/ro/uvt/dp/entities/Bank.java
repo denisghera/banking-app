@@ -28,7 +28,6 @@ public class Bank implements Mediator {
 		accountFactories.put(RON, new AccountRONFactory());
 		accountFactories.put(EUR, new AccountEURFactory());
 	}
-
 	public static synchronized Bank getInstance(String bankCode) {
 		if (instance == null) {
 			instance = new Bank(bankCode);
@@ -41,7 +40,6 @@ public class Bank implements Mediator {
 		}
 		return instance;
 	}
-
 	public Account createAccount(Account.TYPE type, double initialAmount, Client client) throws InvalidAmountException, LimitExceededException {
 		AccountFactory factory = accountFactories.get(type);
 		if (factory == null) {
@@ -54,26 +52,26 @@ public class Bank implements Mediator {
 		sendMessageToClient("Account " + account.getAccountCode() + " was created for you!", client);
 		return account;
 	}
-
-	public Client createClient(String name, String address, List<Account> accounts) throws LimitExceededException {
+	public Client createClient(String username, String fullName, String address, String email, String bankID) throws LimitExceededException {
 		ClientBuilder builder = new ClientBuilder();
-		builder.setName(name).setAddress(address);
-		for (Account account : accounts) {
-			builder.addAccount(account);
-		}
+		builder.setUsername(username)
+				.setName(fullName)
+				.setAddress(address)
+				.setEmail(email)
+				.setBankID(bankID);
+
 		Client client = builder.build();
 		addClient(client);
 		client.setMediator(this);
+
 		return client;
 	}
-
 	private void addClient(Client client) throws LimitExceededException {
 		if (clients.size() >= MAX_CLIENTS_NUMBER) {
 			throw new LimitExceededException("Bank has reached its maximum number of clients.");
 		}
 		clients.add(client);
 	}
-
 	public String generateDailyReport() {
 		StringBuilder report = new StringBuilder();
 		for (Client client : clients) {
@@ -94,7 +92,6 @@ public class Bank implements Mediator {
 	public void sendMessageToClient(String message, Client receiver) {
 		receiver.receiveMessage("[Bank] " + message);
 	}
-
 	@Override
 	public void sendMessageToAll(String message) {
 		for (Client client : clients) {
@@ -106,6 +103,14 @@ public class Bank implements Mediator {
 	}
 	public String getBankCode() {
 		return bankCode;
+	}
+	public Client getClientByUsername(String username) {
+		for (Client client : clients) {
+			if (client.getUsername().equals(username)) {
+				return client;
+			}
+		}
+		return null;
 	}
 	public String toString() {
 		return "\nBank [bankCode=" + bankCode + ", clients=" + clients + "]";

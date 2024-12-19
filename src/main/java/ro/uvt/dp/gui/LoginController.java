@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import ro.uvt.dp.database.DatabaseConnector;
+import ro.uvt.dp.server.NetworkClient;
 
 import java.io.IOException;
 
@@ -20,25 +21,40 @@ public class LoginController {
     private PasswordField passwordField;
 
     @FXML
-    private void handleLogin() throws IOException {
+    private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
-
-        if (DatabaseConnector.validateLogin(username, password)) {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Login");
-            alert.setHeaderText(null);
-            alert.setContentText("Login successful for " + username);
-            alert.showAndWait();
-
-            switchToMainPage();
-        } else {
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Login Failed");
-            alert.setHeaderText("Invalid Credentials");
-            alert.setContentText("The username or password is incorrect. Please try again.");
-            alert.showAndWait();
+        String bankID = DatabaseConnector.getUserBankID(username);
+        if (bankID == null) {
+            showError("Invalid credentials!");
+            return;
         }
+
+        try (NetworkClient networkClient = new NetworkClient(bankID)) {
+            String response = networkClient.login(username, password);
+
+            if (response.startsWith("SUCCESS")) {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Login");
+                alert.setHeaderText(null);
+                alert.setContentText("Login successful for " + username);
+                alert.showAndWait();
+
+                switchToMainPage();
+            } else {
+                showError(response);
+            }
+        } catch (IOException e) {
+            showError("Error communicating with the server: " + e.getMessage());
+        }
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Login Failed");
+        alert.setHeaderText("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     @FXML
@@ -56,7 +72,7 @@ public class LoginController {
     }
     private void switchToSignupPage() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("signup.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 360);
+        Scene scene = new Scene(fxmlLoader.load(), 320, 420);
         Stage stage = (Stage) usernameField.getScene().getWindow();
         stage.setTitle("Signup");
         stage.setScene(scene);

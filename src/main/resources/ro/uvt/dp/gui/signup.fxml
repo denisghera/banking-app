@@ -4,7 +4,10 @@
 
 <VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.SignupController">
     <TextField fx:id="usernameField" promptText="Username" />
+    <TextField fx:id="fullnameField" promptText="Full Name" />
     <TextField fx:id="emailField" promptText="Email" />
+    <TextField fx:id="addressField" promptText="Address" />
+    <ComboBox fx:id="bankComboBox" promptText="Select Bank" />
     <PasswordField fx:id="passwordField" promptText="Password" />
     <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
     <Button text="Sign Up" onAction="#handleSignup" />

@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientBuilder implements ClientBuilderInterface {
+    private String username;
     private String name;
     private String address;
+    private String email;
+    private String bankID;
     private final List<Account> accounts = new ArrayList<>();
 
     @Override
@@ -29,6 +32,30 @@ public class ClientBuilder implements ClientBuilderInterface {
         return this;
     }
 
+    public ClientBuilderInterface setEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        this.email = email;
+        return this;
+    }
+
+    public ClientBuilderInterface setBankID(String bankID) {
+        if (bankID == null || bankID.isEmpty()) {
+            throw new IllegalArgumentException("BankID cannot be null or empty");
+        }
+        this.bankID = bankID;
+        return this;
+    }
+
+    public ClientBuilderInterface setUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        this.username = username;
+        return this;
+    }
+
     @Override
     public ClientBuilderInterface addAccount(Account account) throws LimitExceededException {
         if (this.accounts.size() >= Client.MAX_ACCOUNTS) {
@@ -40,9 +67,10 @@ public class ClientBuilder implements ClientBuilderInterface {
 
     @Override
     public Client build() {
-        if (this.name == null || this.address == null) {
-            throw new IllegalStateException("Client name or address not specified!");
+        if (this.username == null || this.name == null || this.address == null || this.email == null || this.bankID == null) {
+            throw new IllegalStateException("Client username, name, address, email, or bankID not specified!");
         }
-        return new Client(name, address, new ArrayList<>(accounts));
+
+        return new Client(username, name, address, email, bankID, new ArrayList<>(accounts));
     }
 }
