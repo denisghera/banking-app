@@ -36,3 +36,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+/.idea/dataSources/1ae430ea-700d-4868-94fd-6b081f2cb2e6.xml
+/.idea/dataSources.local.xml
+/.idea/dataSources/1ae430ea-700d-4868-94fd-6b081f2cb2e6/storage_v2/_src_/database/dp-banking.5bseeQ/schema/dbo.sYMBAA.meta
+/.idea/dataSources/1ae430ea-700d-4868-94fd-6b081f2cb2e6/storage_v2/_src_/database/dp-banking.5bseeQ.meta
+/.idea/dataSources/1ae430ea-700d-4868-94fd-6b081f2cb2e6/storage_v2/_src_/database/dp-banking.5bseeQ/schema/INFORMATION_SCHEMA.NBgcMw.meta
+/.idea/dataSources/1ae430ea-700d-4868-94fd-6b081f2cb2e6/storage_v2/_src_/database/dp-banking.5bseeQ/schema/sys.zb4BAA.meta
