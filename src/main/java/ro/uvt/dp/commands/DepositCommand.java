@@ -14,7 +14,7 @@ public class DepositCommand implements Command {
     }
 
     @Override
-    public void execute() throws InvalidAmountException {
+    public void execute() {
         account.deposit(sum);
     }
 }

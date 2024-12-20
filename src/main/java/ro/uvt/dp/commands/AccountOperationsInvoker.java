@@ -9,7 +9,7 @@ import java.util.Stack;
 public class AccountOperationsInvoker {
     private Stack<Command> commandHistory = new Stack<>();
 
-    public void invokeCommand(Command command) throws InvalidAmountException, InsufficientFundsException {
+    public void invokeCommand(Command command) {
         command.execute();
         commandHistory.push(command);
     }

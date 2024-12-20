@@ -17,7 +17,7 @@ public class TransferCommand implements Command {
     }
 
     @Override
-    public void execute() throws InvalidAmountException, InsufficientFundsException {
+    public void execute() {
         sourceAccount.transfer(targetAccount, sum);
     }
 }

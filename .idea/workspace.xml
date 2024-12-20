@@ -4,15 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="935e26fc-aced-4946-a47e-4938fd441c1b" name="Changes" comment="State pattern implemented">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/SupportHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/support/AdminSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/support/CustomerSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/support/Request.java" afterDir="false" />
+    <list default="true" id="935e26fc-aced-4946-a47e-4938fd441c1b" name="Changes" comment="Basic Chain of Responsibility pattern implemented">
+      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/memento/AccountMemento.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/memento/History.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/CorTests.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/StateTests.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/AccountOperationsInvoker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/AccountOperationsInvoker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/DepositCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/DepositCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/RetrieveCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/RetrieveCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/TransferCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/commands/TransferCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/decorators/RoundUpDecorator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/decorators/RoundUpDecorator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Account.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Account.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/Command.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/AccountTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/BankTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/ClientBuilderTest.java" beforeDir="false" />
@@ -230,7 +234,7 @@
       <workItem from="1733400506001" duration="7581000" />
       <workItem from="1734606385367" duration="17086000" />
       <workItem from="1734697852741" duration="1118000" />
-      <workItem from="1734699000279" duration="4549000" />
+      <workItem from="1734699000279" duration="5883000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit for GUI implementation">
       <option name="closed" value="true" />
@@ -264,7 +268,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734701208060</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Basic Chain of Responsibility pattern implemented">
+      <option name="closed" value="true" />
+      <created>1734703681903</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1734703681903</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -287,7 +299,8 @@
     <MESSAGE value="Basic GUI + Database connection" />
     <MESSAGE value="Basic login/register + client/server + database adjustments" />
     <MESSAGE value="State pattern implemented" />
-    <option name="LAST_COMMIT_MESSAGE" value="State pattern implemented" />
+    <MESSAGE value="Basic Chain of Responsibility pattern implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="Basic Chain of Responsibility pattern implemented" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/banking_app$tests_in_banking_app.ic" NAME="tests in banking-app Coverage Results" MODIFIED="1734698876254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />

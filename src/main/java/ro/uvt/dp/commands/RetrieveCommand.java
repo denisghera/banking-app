@@ -15,7 +15,7 @@ public class RetrieveCommand implements Command {
     }
 
     @Override
-    public void execute() throws InvalidAmountException, InsufficientFundsException {
+    public void execute() {
         account.retrieve(sum);
     }
 }

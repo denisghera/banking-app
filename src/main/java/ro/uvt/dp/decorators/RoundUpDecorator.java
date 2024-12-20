@@ -16,7 +16,7 @@ public class RoundUpDecorator extends AccountDecorator {
     }
 
     @Override
-    public void transfer(Account targetAccount, double sum) throws InvalidAmountException, InsufficientFundsException {
+    public void transfer(Account targetAccount, double sum) {
         account.transfer(targetAccount, sum);
 
         double roundUpDifference = Math.ceil(sum) - sum;
