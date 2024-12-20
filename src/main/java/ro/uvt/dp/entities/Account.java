@@ -7,10 +7,10 @@ import ro.uvt.dp.commands.RetrieveCommand;
 import ro.uvt.dp.commands.TransferCommand;
 import ro.uvt.dp.exceptions.InvalidAmountException;
 import ro.uvt.dp.exceptions.InsufficientFundsException;
-import ro.uvt.dp.services.AccountState;
-import ro.uvt.dp.services.Command;
-import ro.uvt.dp.services.Operations;
-import ro.uvt.dp.services.Transfer;
+import ro.uvt.dp.services.*;
+import ro.uvt.dp.support.AdminSupport;
+import ro.uvt.dp.support.CustomerSupport;
+import ro.uvt.dp.support.Request;
 
 import java.util.UUID;
 
@@ -19,14 +19,19 @@ public abstract class Account implements Operations, Transfer {
 	protected double amount = 0;
 	private Client client;
 	private AccountState state;
+	private boolean initialDeposit;
 	public enum TYPE {
 		EUR, RON
 	};
 
 	protected Account(double initialAmount) throws InvalidAmountException {
 		this.accountCode = UUID.randomUUID().toString();
-		deposit(initialAmount);
 		setState(new ClosedAccountState());
+		initialDeposit = true;
+		SupportHandler customerSupport = new CustomerSupport();
+		Request request = new Request(Request.Priority.BASIC, this);
+		customerSupport.handleRequest(request);
+		deposit(initialAmount);
 	}
 	@Override
 	public double getTotalAmount() {
@@ -35,10 +40,23 @@ public abstract class Account implements Operations, Transfer {
 	@Override
 	public void deposit(double sum) throws InvalidAmountException {
 		if (this.request().contains("ERROR")) {
-			throw new IllegalStateException("Cannot deposit into a closed account.");
+			if (initialDeposit) {
+				initialDeposit = false;
+			}
+			else {
+				throw new IllegalStateException("Cannot deposit into a closed account.");
+			}
 		}
 		if (sum <= 0) {
 			throw new InvalidAmountException("Cannot deposit a negative or zero sum.");
+		}
+		if (sum >= 1000) {
+			System.out.println("Generating request for large deposit...");
+			Request request = new Request(Request.Priority.CRITICAL, this);
+			SupportHandler customerSupport = new CustomerSupport();
+			SupportHandler adminSupport = new AdminSupport();
+			customerSupport.setNextHandler(adminSupport);
+			customerSupport.handleRequest(request);
 		}
 		this.amount += sum;
 	}
