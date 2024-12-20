@@ -79,12 +79,10 @@ public class SignupController {
             showError("Failed to communicate with the bank server",e.getMessage());
         }
     }
-
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         return Pattern.matches(emailRegex, email);
     }
-
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -92,7 +90,6 @@ public class SignupController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -100,7 +97,6 @@ public class SignupController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
     @FXML
     private void goToLoginPage() {
         try {

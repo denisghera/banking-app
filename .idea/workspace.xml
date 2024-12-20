@@ -4,20 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="935e26fc-aced-4946-a47e-4938fd441c1b" name="Changes" comment="Basic GUI + Database connection">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/server/BankPortMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/server/BankServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/server/NetworkClient.java" afterDir="false" />
+    <list default="true" id="935e26fc-aced-4946-a47e-4938fd441c1b" name="Changes" comment="Basic login/register + client/server + database adjustments">
+      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/accounts/states/ActiveAccountState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/accounts/states/ClosedAccountState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/AccountState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/StateTests.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/database/DatabaseConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/database/DatabaseConnector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Bank.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Bank.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/ClientBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/ClientBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/HelloApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/HelloApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Account.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/entities/Account.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/SignupController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/gui/SignupController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/ClientBuilderInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ro/uvt/dp/services/ClientBuilderInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/ro/uvt/dp/gui/signup.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/ro/uvt/dp/gui/signup.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/AccountTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/BankTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests/ClientBuilderTest.java" beforeDir="false" />
@@ -35,12 +29,27 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="FxmlFile" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;denisghera&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="6a23f5ff-5e32-4b33-979f-74410eecb191" />
+        <option name="url" value="https://github.com/denisghera/banking-app.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
@@ -78,7 +87,7 @@
     ]
   }
 }</component>
-  <component name="RunManager" selected="Application.Client1">
+  <component name="RunManager" selected="JUnit.StateTests">
     <configuration name="BankServer(TEST)" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="ro.uvt.dp.server.BankServer" />
       <module name="banking-app" />
@@ -117,17 +126,79 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="StateTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="banking-app" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="ro.uvt.dp.tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="ro.uvt.dp.tests" />
+      <option name="MAIN_CLASS_NAME" value="ro.uvt.dp.tests.StateTests" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="StateTests.testDepositInActiveState" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="banking-app" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="ro.uvt.dp.tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="ro.uvt.dp.tests" />
+      <option name="MAIN_CLASS_NAME" value="ro.uvt.dp.tests.StateTests" />
+      <option name="METHOD_NAME" value="testDepositInActiveState" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="StateTests.testDepositInClosedState" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="banking-app" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="ro.uvt.dp.tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="ro.uvt.dp.tests" />
+      <option name="MAIN_CLASS_NAME" value="ro.uvt.dp.tests.StateTests" />
+      <option name="METHOD_NAME" value="testDepositInClosedState" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tests in banking-app" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="banking-app" />
+      <option name="TEST_OBJECT" value="directory" />
+      <dir value="$PROJECT_DIR$/src/main/test/java/ro/uvt/dp/tests" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Application.Client2" />
       <item itemvalue="Application.Client1" />
       <item itemvalue="Application.BankServer(TEST)" />
       <item itemvalue="Application.BankServer(UVT_DP)" />
+      <item itemvalue="JUnit.StateTests" />
+      <item itemvalue="JUnit.StateTests.testDepositInActiveState" />
+      <item itemvalue="JUnit.StateTests.testDepositInClosedState" />
+      <item itemvalue="JUnit.tests in banking-app" />
       <item itemvalue="JUnit.All in banking-app" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.StateTests" />
+        <item itemvalue="JUnit.StateTests.testDepositInClosedState" />
+        <item itemvalue="JUnit.StateTests.testDepositInActiveState" />
+        <item itemvalue="JUnit.tests in banking-app" />
         <item itemvalue="Application.Client1" />
-        <item itemvalue="JUnit.All in banking-app" />
       </list>
     </recent_temporary>
   </component>
@@ -140,7 +211,9 @@
       <option name="presentableId" value="Default" />
       <updated>1733400504812</updated>
       <workItem from="1733400506001" duration="7581000" />
-      <workItem from="1734606385367" duration="16306000" />
+      <workItem from="1734606385367" duration="17086000" />
+      <workItem from="1734697852741" duration="1118000" />
+      <workItem from="1734699000279" duration="2047000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit for GUI implementation">
       <option name="closed" value="true" />
@@ -158,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733407026697</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Basic login/register + client/server + database adjustments">
+      <option name="closed" value="true" />
+      <created>1734638336465</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1734638336465</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -179,6 +260,10 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Initial commit for GUI implementation" />
     <MESSAGE value="Basic GUI + Database connection" />
-    <option name="LAST_COMMIT_MESSAGE" value="Basic GUI + Database connection" />
+    <MESSAGE value="Basic login/register + client/server + database adjustments" />
+    <option name="LAST_COMMIT_MESSAGE" value="Basic login/register + client/server + database adjustments" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/banking_app$tests_in_banking_app.ic" NAME="tests in banking-app Coverage Results" MODIFIED="1734698876254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>

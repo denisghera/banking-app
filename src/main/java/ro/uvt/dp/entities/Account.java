@@ -1,11 +1,13 @@
 package ro.uvt.dp.entities;
 
+import ro.uvt.dp.accounts.states.ClosedAccountState;
 import ro.uvt.dp.commands.AccountOperationsInvoker;
 import ro.uvt.dp.commands.DepositCommand;
 import ro.uvt.dp.commands.RetrieveCommand;
 import ro.uvt.dp.commands.TransferCommand;
 import ro.uvt.dp.exceptions.InvalidAmountException;
 import ro.uvt.dp.exceptions.InsufficientFundsException;
+import ro.uvt.dp.services.AccountState;
 import ro.uvt.dp.services.Command;
 import ro.uvt.dp.services.Operations;
 import ro.uvt.dp.services.Transfer;
@@ -16,6 +18,7 @@ public abstract class Account implements Operations, Transfer {
 	protected String accountCode;
 	protected double amount = 0;
 	private Client client;
+	private AccountState state;
 	public enum TYPE {
 		EUR, RON
 	};
@@ -23,6 +26,7 @@ public abstract class Account implements Operations, Transfer {
 	protected Account(double initialAmount) throws InvalidAmountException {
 		this.accountCode = UUID.randomUUID().toString();
 		deposit(initialAmount);
+		setState(new ClosedAccountState());
 	}
 	@Override
 	public double getTotalAmount() {
@@ -30,6 +34,9 @@ public abstract class Account implements Operations, Transfer {
 	}
 	@Override
 	public void deposit(double sum) throws InvalidAmountException {
+		if (this.request().contains("ERROR")) {
+			throw new IllegalStateException("Cannot deposit into a closed account.");
+		}
 		if (sum <= 0) {
 			throw new InvalidAmountException("Cannot deposit a negative or zero sum.");
 		}
@@ -37,6 +44,9 @@ public abstract class Account implements Operations, Transfer {
 	}
 	@Override
 	public void retrieve(double sum) throws InvalidAmountException, InsufficientFundsException {
+		if (this.request().contains("ERROR")) {
+			throw new IllegalStateException("Cannot retrieve from a closed account.");
+		}
 		if (sum <= 0) {
 			throw new InvalidAmountException("Cannot retrieve a negative or zero sum.");
 		}
@@ -51,8 +61,14 @@ public abstract class Account implements Operations, Transfer {
     }
 	@Override
 	public void transfer(Account targetAccount, double sum) throws InsufficientFundsException, InvalidAmountException {
+		if (this.request().contains("ERROR")) {
+			throw new IllegalStateException("Cannot transfer from a closed account.");
+		}
 		if (targetAccount == null) {
 			throw new IllegalArgumentException("Invalid transfer details.");
+		}
+		if (targetAccount.request().contains("ERROR")) {
+			throw new IllegalStateException("Cannot transfer to a closed account.");
 		}
 		if (sum <= 0 ) {
 			throw new InvalidAmountException("Sum should be greater than 0.");
@@ -86,6 +102,12 @@ public abstract class Account implements Operations, Transfer {
 	}
 	public Client getClient() {
 		return client;
+	}
+	public void setState(AccountState state) {
+		this.state = state;
+	}
+	public String request() {
+		return state.handleRequest();
 	}
 	@Override
 	public String toString() {
