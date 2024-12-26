@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 
-<VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.AccountDetailsController">
+<VBox alignment="CENTER" spacing="15" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.AccountDetailsController">
+    <Label text="Client Information" style="-fx-font-size: 20px;"/>
+    <Label fx:id="clientNameLabel" text="Name: " />
+    <Label fx:id="clientEmailLabel" text="Email: " />
+
+    <Separator />
+
     <Label text="Account Details" style="-fx-font-size: 20px;"/>
-    <Label fx:id="accountNumberLabel" text="Account Number: 123456789"/>
-    <Label fx:id="balanceLabel" text="Balance: $1000.00"/>
-    <Button text="Go to Operations" onAction="#goToOperations"/>
+    <ComboBox fx:id="accountDropdown" onAction="#onAccountSelection" visible="false"/>
+    <Label fx:id="accountNumberLabel" text="Account Number: 123456789" visible="false"/>
+    <Label fx:id="balanceLabel" text="Balance: $1000.00" visible="false"/>
+    <Button text="Request New Account" fx:id="requestAccountButton" onAction="#requestNewAccount" visible="false"/>
+
+    <Separator />
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Go to Operations" onAction="#goToOperations"/>
+        <Button text="Logout" onAction="#logout"/>
+    </HBox>
 </VBox>

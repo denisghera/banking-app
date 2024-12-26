@@ -53,6 +53,9 @@ public class Client {
 				.findFirst()
 				.orElse(null);
 	}
+	public List<Account> getAccounts() {
+		return new ArrayList<>(accounts);
+	}
 	public void setMediator(Mediator mediator) {
 		this.mediator = mediator;
 	}

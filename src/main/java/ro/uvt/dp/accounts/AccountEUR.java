@@ -8,12 +8,13 @@ public class AccountEUR extends Account {
 	public AccountEUR(double initialAmount) throws InvalidAmountException {
 		super(initialAmount);
 	}
-
+	public AccountEUR(String accountCode, double initialAmount) throws InvalidAmountException {
+		super(accountCode, initialAmount);
+	}
 	@Override
 	public double getInterest() {
 		return 0.01;
 	}
-
 	@Override
 	public String toString() {
 		return "\n\t\tAccount EUR [" + super.toString() + "]";

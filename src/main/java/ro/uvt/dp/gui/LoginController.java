@@ -9,9 +9,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import ro.uvt.dp.database.DatabaseConnector;
+import ro.uvt.dp.entities.Account;
+import ro.uvt.dp.entities.Client;
+import ro.uvt.dp.exceptions.LimitExceededException;
 import ro.uvt.dp.server.NetworkClient;
+import ro.uvt.dp.entities.ClientBuilder;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class LoginController {
 
@@ -24,11 +30,14 @@ public class LoginController {
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
-        String bankID = DatabaseConnector.getUserBankID(username);
-        if (bankID == null) {
+
+        Map<String, String> userDetails = DatabaseConnector.getUserDetails(username);
+        if (userDetails == null) {
             showError("Invalid credentials!");
             return;
         }
+
+        String bankID = userDetails.get("bankID");
 
         try (NetworkClient networkClient = new NetworkClient(bankID)) {
             String response = networkClient.login(username, password);
@@ -40,15 +49,32 @@ public class LoginController {
                 alert.setContentText("Login successful for " + username);
                 alert.showAndWait();
 
-                switchToMainPage();
+                Client client = buildClient(userDetails);
+
+                switchToMainPage(client);
             } else {
                 showError(response);
             }
-        } catch (IOException e) {
-            showError("Error communicating with the server: " + e.getMessage());
+        } catch (IOException | LimitExceededException e) {
+            showError("Error: " + e.getMessage());
         }
     }
+    private Client buildClient(Map<String, String> userDetails) throws LimitExceededException {
+        List<Account> accounts = DatabaseConnector.getClientAccounts(userDetails.get("username"));
 
+        ClientBuilder clientBuilder = (ClientBuilder) new ClientBuilder()
+                .setUsername(userDetails.get("username"))
+                .setName(userDetails.get("name"))
+                .setAddress(userDetails.get("address"))
+                .setEmail(userDetails.get("email"))
+                .setBankID(userDetails.get("bankID"));
+
+        for (Account account : accounts) {
+            clientBuilder.addAccount(account);
+        }
+
+        return clientBuilder.build();
+    }
     private void showError(String message) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Login Failed");
@@ -56,15 +82,17 @@ public class LoginController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
     @FXML
     private void goToSignup() throws IOException {
         switchToSignupPage();
     }
-
-    private void switchToMainPage() throws IOException {
+    private void switchToMainPage(Client client) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("accountDetails.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+        Scene scene = new Scene(fxmlLoader.load(), 320, 420);
+
+        AccountDetailsController controller = fxmlLoader.getController();
+        controller.setClient(client);
+
         Stage stage = (Stage) usernameField.getScene().getWindow();
         stage.setTitle("Main Application");
         stage.setScene(scene);

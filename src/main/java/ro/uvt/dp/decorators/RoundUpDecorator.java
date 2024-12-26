@@ -14,7 +14,12 @@ public class RoundUpDecorator extends AccountDecorator {
     public double getRoundUpBalance() {
         return roundUpBalance;
     }
-
+    public void addRoundUpBalance(double amount) throws InvalidAmountException {
+        if (amount < 0) {
+            throw new InvalidAmountException("Round-up balance cannot be negative.");
+        }
+        roundUpBalance += amount;
+    }
     @Override
     public void transfer(Account targetAccount, double sum) {
         account.transfer(targetAccount, sum);

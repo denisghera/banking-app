@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="15" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.AccountCreationController">
+    <Label text="Create New Account" style="-fx-font-size: 20px;"/>
+    <Label text="Currency:"/>
+    <ComboBox fx:id="currencyDropdown" promptText="Select Currency"/>
+    <Label text="Initial Deposit:"/>
+    <TextField fx:id="initialAmountField" promptText="Enter Initial Amount"/>
+    <Button text="Create Account" onAction="#handleAccountCreation"/>
+    <Button text="Back to Accounts" onAction="#goBack"/>
+</VBox>

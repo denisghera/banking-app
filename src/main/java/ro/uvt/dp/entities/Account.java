@@ -26,9 +26,11 @@ public abstract class Account implements Operations, Transfer {
 	public enum TYPE {
 		EUR, RON
 	};
-
 	protected Account(double initialAmount) throws InvalidAmountException {
-		this.accountCode = UUID.randomUUID().toString();
+		this(UUID.randomUUID().toString().substring(0, 5), initialAmount);
+	}
+	protected Account(String accountCode, double initialAmount) throws InvalidAmountException {
+		this.accountCode = accountCode;
 		setState(new ClosedAccountState());
 		initialDeposit = true;
 		SupportHandler customerSupport = new CustomerSupport();
@@ -39,6 +41,9 @@ public abstract class Account implements Operations, Transfer {
 	@Override
 	public double getTotalAmount() {
 		return amount + amount * getInterest();
+	}
+	public double getAmount() {
+		return amount;
 	}
 	@Override
 	public void deposit(double sum) {

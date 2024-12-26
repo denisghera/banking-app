@@ -1,8 +1,17 @@
 package ro.uvt.dp.database;
 
+import ro.uvt.dp.accounts.AccountEURFactory;
+import ro.uvt.dp.accounts.AccountRONFactory;
+import ro.uvt.dp.decorators.LifeInsuranceDecorator;
+import ro.uvt.dp.decorators.RoundUpDecorator;
+import ro.uvt.dp.entities.Account;
+import ro.uvt.dp.exceptions.InvalidAmountException;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseConnector {
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=dp-banking;encrypt=false;trustServerCertificate=true";
@@ -138,5 +147,89 @@ public class DatabaseConnector {
             e.printStackTrace();
         }
         return bankID;
+    }
+    public static List<Account> getClientAccounts(String username) {
+        List<Account> accounts = new ArrayList<>();
+        String query = "SELECT id, currency, balance, insurance_check, roundup_check, roundup_balance FROM Accounts WHERE client_username = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String accountCode = rs.getString("id");
+                    String currency = rs.getString("currency");
+                    double amount = rs.getDouble("balance");
+                    boolean insurance = rs.getBoolean("insurance_check");
+                    boolean roundupCheck = rs.getBoolean("roundup_check");
+                    double roundupBalance = rs.getDouble("roundup_balance");
+
+                    Account account;
+                    switch (currency) {
+                        case "EUR":
+                            account = new AccountEURFactory().create(accountCode, amount);
+                            break;
+                        case "RON":
+                            account = new AccountRONFactory().create(accountCode, amount);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unsupported currency: " + currency);
+                    }
+
+                    if (insurance) {
+                        account = new LifeInsuranceDecorator(account);
+                        ((LifeInsuranceDecorator) account).updateLifeInsurance(true, 10000);
+                    }
+                    if (roundupCheck) {
+                        account = new RoundUpDecorator(account);
+                        ((RoundUpDecorator) account).addRoundUpBalance(roundupBalance);
+                    }
+
+                    accounts.add(account);
+                }
+            }
+        } catch (SQLException | InvalidAmountException e) {
+            e.printStackTrace();
+        }
+        return accounts;
+    }
+    public static Map<String, String> getUserDetails(String username) {
+        String query = "SELECT username, full_name, address, email, bank_id FROM Clients WHERE username = ?";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, String> userDetails = new HashMap<>();
+                    userDetails.put("username", rs.getString("username"));
+                    userDetails.put("name", rs.getString("full_name"));
+                    userDetails.put("address", rs.getString("address"));
+                    userDetails.put("email", rs.getString("email"));
+                    userDetails.put("bankID", rs.getString("bank_id"));
+                    return userDetails;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static void addAccount(String clientUsername, Account account, String currency) {
+        String query = "INSERT INTO Accounts (id, client_username, currency, balance, insurance_check, roundup_check, roundup_balance) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, account.getAccountCode());
+            stmt.setString(2, clientUsername);
+            stmt.setString(3, currency);
+            stmt.setDouble(4, account.getAmount());
+            stmt.setBoolean(5, false);
+            stmt.setBoolean(6, false);
+            stmt.setDouble(7, 0);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

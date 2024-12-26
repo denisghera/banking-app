@@ -9,4 +9,7 @@ public class AccountEURFactory implements AccountFactory {
     public Account create(double initialAmount) throws InvalidAmountException {
         return new AccountEUR(initialAmount);
     }
+    public Account create(String accountCode, double initialAmount) throws InvalidAmountException {
+        return new AccountEUR(accountCode, initialAmount);
+    }
 }

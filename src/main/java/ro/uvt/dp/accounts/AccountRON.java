@@ -8,7 +8,9 @@ public class AccountRON extends Account {
 	public AccountRON(double initialAmount) throws InvalidAmountException {
 		super(initialAmount);
 	}
-
+	public AccountRON(String accountCode, double initialAmount) throws InvalidAmountException {
+		super(accountCode, initialAmount);
+	}
 	@Override
 	public double getInterest() {
 		if (amount < 500)
@@ -16,7 +18,6 @@ public class AccountRON extends Account {
 		else
 			return 0.08;
 	}
-
 	@Override
 	public String toString() {
 		return "\n\t\tAccount RON [" + super.toString() + "]";

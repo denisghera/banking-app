@@ -9,4 +9,7 @@ public class AccountRONFactory implements AccountFactory {
     public Account create(double initialAmount) throws InvalidAmountException {
         return new AccountRON(initialAmount);
     }
+    public Account create(String accountCode, double initialAmount) throws InvalidAmountException {
+        return new AccountRON(accountCode, initialAmount);
+    }
 }
