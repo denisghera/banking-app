@@ -19,7 +19,7 @@
     <Separator />
 
     <HBox spacing="10" alignment="CENTER">
-        <Button text="Go to Operations" onAction="#goToOperations"/>
+        <Button text="Go to Operations" fx:id="goToOperationsButton" onAction="#goToOperations"/>
         <Button text="Logout" onAction="#logout"/>
     </HBox>
 </VBox>

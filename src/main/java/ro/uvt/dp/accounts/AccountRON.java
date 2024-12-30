@@ -2,14 +2,15 @@ package ro.uvt.dp.accounts;
 
 import ro.uvt.dp.entities.Account;
 import ro.uvt.dp.exceptions.InvalidAmountException;
+import ro.uvt.dp.services.AccountState;
 
 public class AccountRON extends Account {
 
 	public AccountRON(double initialAmount) throws InvalidAmountException {
 		super(initialAmount);
 	}
-	public AccountRON(String accountCode, double initialAmount) throws InvalidAmountException {
-		super(accountCode, initialAmount);
+	public AccountRON(String accountCode, double initialAmount, AccountState state) throws InvalidAmountException {
+		super(accountCode, initialAmount, state);
 	}
 	@Override
 	public double getInterest() {

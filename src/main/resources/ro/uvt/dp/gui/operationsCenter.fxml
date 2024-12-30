@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.layout.HBox?>
+<VBox alignment="CENTER" spacing="15" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ro.uvt.dp.gui.OperationsCenterController">
+    <Label text="Operations Center" style="-fx-font-size: 20px;"/>
+
+    <Button text="Transfer" onAction="#handleTransfer"/>
+    <Button text="Deposit" onAction="#handleDeposit"/>
+    <Button text="Retrieve" onAction="#handleRetrieve"/>
+    <Button text="Create Additional Account" onAction="#handleCreateAccount"/>
+    <Button text="Opt for Roundup" onAction="#handleOptForRoundup"/>
+    <Button text="Opt for Insurance" onAction="#handleOptForInsurance"/>
+
+    <Separator />
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Back to Account Details" fx:id="backButton" onAction="#goBackToAccountDetails"/>
+    </HBox>
+</VBox>

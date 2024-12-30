@@ -2,10 +2,13 @@ package ro.uvt.dp.database;
 
 import ro.uvt.dp.accounts.AccountEURFactory;
 import ro.uvt.dp.accounts.AccountRONFactory;
+import ro.uvt.dp.accounts.states.ActiveAccountState;
+import ro.uvt.dp.accounts.states.ClosedAccountState;
 import ro.uvt.dp.decorators.LifeInsuranceDecorator;
 import ro.uvt.dp.decorators.RoundUpDecorator;
 import ro.uvt.dp.entities.Account;
 import ro.uvt.dp.exceptions.InvalidAmountException;
+import ro.uvt.dp.services.AccountState;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -32,7 +35,6 @@ public class DatabaseConnector {
         }
         return connection;
     }
-
     public static boolean addUser(String username, String fullname, String email, String address, String password, String bankID) {
 
         String credQuery = "INSERT INTO Credentials (username, password) VALUES (?, ?)";
@@ -74,7 +76,6 @@ public class DatabaseConnector {
             return false;
         }
     }
-
     public static boolean validateLogin(String username, String password) {
         String query = "SELECT COUNT(*) FROM Credentials WHERE username = ? AND password = ?";
 
@@ -94,7 +95,6 @@ public class DatabaseConnector {
         }
         return false;
     }
-
     public static boolean isUsernameTaken(String username) {
         String query = "SELECT COUNT(*) FROM Credentials WHERE username = ?";
 
@@ -104,7 +104,7 @@ public class DatabaseConnector {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0; // Username exists if count > 0
+                    return rs.getInt(1) > 0;
                 }
             }
         } catch (SQLException e) {
@@ -112,7 +112,6 @@ public class DatabaseConnector {
         }
         return false;
     }
-
     public static List<String> getBankIDs() {
         List<String> bankIDs = new ArrayList<>();
         String query = "SELECT unique_code FROM Banks";
@@ -128,25 +127,6 @@ public class DatabaseConnector {
             e.printStackTrace();
         }
         return bankIDs;
-    }
-
-    public static String getUserBankID(String username) {
-        String bankID = null;
-        String query = "SELECT bank_id FROM Clients WHERE username = ?";
-
-        try (Connection conn = connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    bankID = rs.getString("bank_id");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return bankID;
     }
     public static List<Account> getClientAccounts(String username) {
         List<Account> accounts = new ArrayList<>();
@@ -164,14 +144,20 @@ public class DatabaseConnector {
                     boolean insurance = rs.getBoolean("insurance_check");
                     boolean roundupCheck = rs.getBoolean("roundup_check");
                     double roundupBalance = rs.getDouble("roundup_balance");
-
+                    boolean isActive = rs.getBoolean("active");
+                    AccountState state;
+                    if (isActive) {
+                        state = new ActiveAccountState();
+                    } else {
+                        state = new ClosedAccountState();
+                    }
                     Account account;
                     switch (currency) {
                         case "EUR":
-                            account = new AccountEURFactory().create(accountCode, amount);
+                            account = new AccountEURFactory().create(accountCode, amount, state);
                             break;
                         case "RON":
-                            account = new AccountRONFactory().create(accountCode, amount);
+                            account = new AccountRONFactory().create(accountCode, amount, state);
                             break;
                         default:
                             throw new IllegalArgumentException("Unsupported currency: " + currency);
@@ -216,18 +202,29 @@ public class DatabaseConnector {
         return null;
     }
     public static void addAccount(String clientUsername, Account account, String currency) {
-        String query = "INSERT INTO Accounts (id, client_username, currency, balance, insurance_check, roundup_check, roundup_balance) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, account.getAccountCode());
-            stmt.setString(2, clientUsername);
-            stmt.setString(3, currency);
-            stmt.setDouble(4, account.getAmount());
-            stmt.setBoolean(5, false);
-            stmt.setBoolean(6, false);
-            stmt.setDouble(7, 0);
-            stmt.executeUpdate();
+        String accountQuery = "INSERT INTO Accounts (id, client_username, currency, balance, insurance_check, roundup_check, roundup_balance, active) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String updateClientQuery = "UPDATE Clients SET no_of_accounts = no_of_accounts + 1 WHERE username = ?";
+
+        try (Connection conn = connect()) {
+            try (PreparedStatement stmt = conn.prepareStatement(accountQuery)) {
+                stmt.setString(1, account.getAccountCode());
+                stmt.setString(2, clientUsername);
+                stmt.setString(3, currency);
+                stmt.setDouble(4, account.getAmount());
+                stmt.setBoolean(5, false);
+                stmt.setBoolean(6, false);
+                stmt.setDouble(7, 0);
+                stmt.setBoolean(8, false);
+                stmt.executeUpdate();
+            }
+
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateClientQuery)) {
+                updateStmt.setString(1, clientUsername);
+                updateStmt.executeUpdate();
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

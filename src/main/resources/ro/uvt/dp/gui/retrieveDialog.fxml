@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17.0.1" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="ro.uvt.dp.gui.RetrieveDialogController">
+    <Label text="Retrieve Funds" style="-fx-font-size: 16px;" />
+    <TextField fx:id="amountField" promptText="Amount" />
+    <Button text="Generate PIN &amp; Retrieve" onAction="#handleRetrieve" />
+</VBox>
+

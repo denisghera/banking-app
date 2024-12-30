@@ -26,6 +26,9 @@ public class AccountDetailsController {
     private ComboBox<Account> accountDropdown;
     @FXML
     private Button requestAccountButton;
+    @FXML
+    private Button goToOperationsButton;
+
     private Client client;
     public void setClient(Client client) {
         this.client = client;
@@ -43,6 +46,7 @@ public class AccountDetailsController {
             accountNumberLabel.setVisible(false);
             balanceLabel.setVisible(false);
             accountDropdown.setVisible(false);
+            goToOperationsButton.setDisable(true);
         } else {
             if (accounts.size() == 1) {
                 requestAccountButton.setVisible(false);
@@ -55,7 +59,7 @@ public class AccountDetailsController {
 
                 displayAccountDetails(accounts.get(0));
             }
-
+            goToOperationsButton.setDisable(false);
             accountNumberLabel.setVisible(true);
             balanceLabel.setVisible(true);
         }
@@ -92,7 +96,20 @@ public class AccountDetailsController {
     }
     @FXML
     private void goToOperations() {
-        // Navigate to operations page
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("operationsCenter.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 320, 380);
+
+            OperationsCenterController controller = fxmlLoader.getController();
+            controller.setClient(client);
+
+            Stage stage = (Stage) clientNameLabel.getScene().getWindow();
+            stage.setTitle("Operations Center");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     @FXML
     private void logout() {

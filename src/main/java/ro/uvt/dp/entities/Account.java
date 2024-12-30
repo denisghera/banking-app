@@ -27,11 +27,11 @@ public abstract class Account implements Operations, Transfer {
 		EUR, RON
 	};
 	protected Account(double initialAmount) throws InvalidAmountException {
-		this(UUID.randomUUID().toString().substring(0, 5), initialAmount);
+		this(UUID.randomUUID().toString().substring(0, 5), initialAmount, new ClosedAccountState());
 	}
-	protected Account(String accountCode, double initialAmount) throws InvalidAmountException {
+	protected Account(String accountCode, double initialAmount, AccountState state) throws InvalidAmountException {
 		this.accountCode = accountCode;
-		setState(new ClosedAccountState());
+		setState(state);
 		initialDeposit = true;
 		SupportHandler customerSupport = new CustomerSupport();
 		Request request = new Request(Request.Priority.BASIC, this);
