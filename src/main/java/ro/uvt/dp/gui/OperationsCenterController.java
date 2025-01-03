@@ -4,8 +4,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ro.uvt.dp.entities.Client;
@@ -39,22 +37,33 @@ public class OperationsCenterController {
     }
 
     @FXML
-    private void handleCreateAccount() {
-        showDialog("Create New Account", "accountCreation.fxml");
-    }
-
-    @FXML
     private void handleOptForRoundup() {
-        showSimpleDialog("Opt for Roundup", "Lorem ipsum dolor sit amet.\n\nDo you agree?", () -> {
-            System.out.println("Roundup agreed!");
-        });
+        showAccountSelectionDialog("Opt for Roundup", false);
     }
 
     @FXML
     private void handleOptForInsurance() {
-        showSimpleDialog("Opt for Insurance", "Lorem ipsum dolor sit amet.\n\nDo you agree?", () -> {
-            System.out.println("Insurance agreed!");
-        });
+        showAccountSelectionDialog("Opt for Insurance", true);
+    }
+
+    private void showAccountSelectionDialog(String title, boolean isInsurance) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("insuranceRoundupDialog.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+
+            InsuranceRoundupDialogController controller = fxmlLoader.getController();
+            controller.setAccounts(client.getAccounts(), isInsurance);
+
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle(title);
+            dialog.setScene(scene);
+            controller.setDialogStage(dialog);
+
+            dialog.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -78,7 +87,7 @@ public class OperationsCenterController {
     private void showDialog(String title, String fxmlFile) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFile));
-            Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+            Scene scene = new Scene(fxmlLoader.load());
 
             Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
@@ -86,29 +95,24 @@ public class OperationsCenterController {
             dialog.setScene(scene);
 
             Object controller = fxmlLoader.getController();
+
             if (controller instanceof DialogController) {
                 ((DialogController) controller).setClient(client);
+
+                if (controller instanceof DepositDialogController) {
+                    ((DepositDialogController) controller).setDialogStage(dialog);
+                }
+                else if (controller instanceof RetrieveDialogController) {
+                    ((RetrieveDialogController) controller).setDialogStage(dialog);
+                }
+                else if (controller instanceof TransferDialogController) {
+                    ((TransferDialogController) controller).setDialogStage(dialog);
+                }
             }
 
             dialog.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ClassCastException e) {
-            System.err.println("Controller for " + fxmlFile + " does not implement DialogController.");
         }
-    }
-    private void showSimpleDialog(String title, String message, Runnable onAgree) {
-        Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response.getText().equalsIgnoreCase("OK") || response.getText().equalsIgnoreCase("Yes")) {
-                onAgree.run();
-            } else {
-                System.out.println("Action canceled by user.");
-            }
-        });
     }
 }

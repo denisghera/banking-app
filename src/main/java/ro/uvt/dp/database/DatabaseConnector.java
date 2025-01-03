@@ -1,12 +1,15 @@
 package ro.uvt.dp.database;
 
+import ro.uvt.dp.accounts.AccountEUR;
 import ro.uvt.dp.accounts.AccountEURFactory;
+import ro.uvt.dp.accounts.AccountRON;
 import ro.uvt.dp.accounts.AccountRONFactory;
 import ro.uvt.dp.accounts.states.ActiveAccountState;
 import ro.uvt.dp.accounts.states.ClosedAccountState;
 import ro.uvt.dp.decorators.LifeInsuranceDecorator;
 import ro.uvt.dp.decorators.RoundUpDecorator;
 import ro.uvt.dp.entities.Account;
+import ro.uvt.dp.entities.AccountDecorator;
 import ro.uvt.dp.exceptions.InvalidAmountException;
 import ro.uvt.dp.services.AccountState;
 
@@ -130,7 +133,7 @@ public class DatabaseConnector {
     }
     public static List<Account> getClientAccounts(String username) {
         List<Account> accounts = new ArrayList<>();
-        String query = "SELECT id, currency, balance, insurance_check, roundup_check, roundup_balance FROM Accounts WHERE client_username = ?";
+        String query = "SELECT id, currency, balance, insurance_check, roundup_check, roundup_balance, active FROM Accounts WHERE client_username = ?";
 
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -204,10 +207,12 @@ public class DatabaseConnector {
     public static void addAccount(String clientUsername, Account account, String currency) {
         String accountQuery = "INSERT INTO Accounts (id, client_username, currency, balance, insurance_check, roundup_check, roundup_balance, active) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
         String updateClientQuery = "UPDATE Clients SET no_of_accounts = no_of_accounts + 1 WHERE username = ?";
+        String updateBankQuery = "UPDATE Banks SET no_of_accounts = no_of_accounts + 1 WHERE unique_code = (SELECT bank_id FROM Clients WHERE username = ?)";
 
         try (Connection conn = connect()) {
+            conn.setAutoCommit(false);
+
             try (PreparedStatement stmt = conn.prepareStatement(accountQuery)) {
                 stmt.setString(1, account.getAccountCode());
                 stmt.setString(2, clientUsername);
@@ -220,13 +225,171 @@ public class DatabaseConnector {
                 stmt.executeUpdate();
             }
 
-            try (PreparedStatement updateStmt = conn.prepareStatement(updateClientQuery)) {
-                updateStmt.setString(1, clientUsername);
-                updateStmt.executeUpdate();
+            try (PreparedStatement updateClientStmt = conn.prepareStatement(updateClientQuery)) {
+                updateClientStmt.setString(1, clientUsername);
+                updateClientStmt.executeUpdate();
             }
 
+            try (PreparedStatement updateBankStmt = conn.prepareStatement(updateBankQuery)) {
+                updateBankStmt.setString(1, clientUsername);
+                updateBankStmt.executeUpdate();
+            }
+
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+        }
+    }
+    public static void updateDatabaseOnOperation(Account account) {
+        String query = "UPDATE Accounts SET balance = ? WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setDouble(1, account.getAmount());
+            stmt.setString(2, account.getAccountCode());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Failed to update database: " + e.getMessage());
+            throw new RuntimeException("Database update failed", e);
+        }
+    }
+    public static void updateRoundupBalanceInDatabase(String accountCode, double roundUpBalance) {
+        String query = "UPDATE Accounts SET roundup_balance = ? WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDouble(1, roundUpBalance);
+            stmt.setString(2, accountCode);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Failed to update roundup_balance in database: " + e.getMessage());
+            throw new RuntimeException("Database update failed", e);
+        }
+    }
+
+    public static void setAccountActive(String accountId, boolean isActive) {
+        String query = "UPDATE Accounts SET active = ? WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setBoolean(1, isActive);
+            stmt.setString(2, accountId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database update failed", e);
+        }
+    }
+    public static Account findAccountById(String accountId) {
+        Account account = null;
+        String query = "SELECT * FROM Accounts WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, accountId);
+            ResultSet resultSet = stmt.executeQuery();
+
+            if (resultSet.next()) {
+                String accountCode = resultSet.getString("id");
+                double balance = resultSet.getDouble("balance");
+                String currency = resultSet.getString("currency");
+                boolean stateBit = resultSet.getBoolean("active");
+                AccountState state = stateBit ? new ActiveAccountState() : new ClosedAccountState();
+                if (currency.equals("RON")) {
+                    account = new AccountRON(accountCode, balance, state);
+                } else if (currency.equals("EUR")) {
+                    account = new AccountEUR(accountCode, balance, state);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (InvalidAmountException e) {
+            throw new RuntimeException(e);
+        }
+
+        return account;
+    }
+    public static void saveTransaction(String operationType, String initiatorId, String recipientId, double amount, String message) {
+        String transactionQuery = "INSERT INTO Transactions (type, initiator_id, recipient_id, amount, message) VALUES (?, ?, ?, ?, ?)";
+        String clientQuery = "SELECT client_username FROM Accounts WHERE id = ?";
+        String bankQuery = "UPDATE Banks SET no_of_transactions = no_of_transactions + 1 WHERE unique_code = (SELECT bank_id FROM Clients WHERE username = ?)";
+
+        try (Connection conn = connect()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(transactionQuery)) {
+                stmt.setString(1, operationType);
+                stmt.setString(2, initiatorId);
+                if (recipientId != null) {
+                    stmt.setString(3, recipientId);
+                } else {
+                    stmt.setString(3, "");
+                }
+                stmt.setDouble(4, amount);
+                stmt.setString(5, message);
+                stmt.executeUpdate();
+            }
+
+            String clientUsername = null;
+            try (PreparedStatement clientStmt = conn.prepareStatement(clientQuery)) {
+                clientStmt.setString(1, initiatorId);
+                try (ResultSet rs = clientStmt.executeQuery()) {
+                    if (rs.next()) {
+                        clientUsername = rs.getString("client_username");
+                    }
+                }
+            }
+
+            if (clientUsername != null) {
+                try (PreparedStatement bankStmt = conn.prepareStatement(bankQuery)) {
+                    bankStmt.setString(1, clientUsername);
+                    bankStmt.executeUpdate();
+                }
+            } else {
+                System.err.println("Client username not found for account ID: " + initiatorId);
+            }
+
+            conn.commit();
+            System.out.println("Transaction saved and bank transaction count updated.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+        }
+    }
+    public static void setAccountInsurance(String accountId) {
+        String query = "UPDATE Accounts SET insurance_check = 1 WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, accountId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database update failed", e);
+        }
+    }
+    public static void setAccountRoundup(String accountId) {
+        String query = "UPDATE Accounts SET roundup_check = 1 WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, accountId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database update failed", e);
         }
     }
 }

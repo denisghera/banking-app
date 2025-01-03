@@ -18,6 +18,6 @@ public class AccountEUR extends Account {
 	}
 	@Override
 	public String toString() {
-		return "\n\t\tAccount EUR [" + super.toString() + "]";
+		return "Account EUR [" + super.toString() + "]";
 	}
 }

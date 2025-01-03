@@ -7,7 +7,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import ro.uvt.dp.accounts.AccountEUR;
+import ro.uvt.dp.accounts.AccountRON;
 import ro.uvt.dp.entities.Account;
+import ro.uvt.dp.entities.AccountDecorator;
 import ro.uvt.dp.entities.Client;
 
 import java.io.IOException;
@@ -28,6 +31,8 @@ public class AccountDetailsController {
     private Button requestAccountButton;
     @FXML
     private Button goToOperationsButton;
+    @FXML
+    private Button additionalAccountButton;
 
     private Client client;
     public void setClient(Client client) {
@@ -43,6 +48,7 @@ public class AccountDetailsController {
 
         if (accounts.isEmpty()) {
             requestAccountButton.setVisible(true);
+            additionalAccountButton.setVisible(false);
             accountNumberLabel.setVisible(false);
             balanceLabel.setVisible(false);
             accountDropdown.setVisible(false);
@@ -59,6 +65,7 @@ public class AccountDetailsController {
 
                 displayAccountDetails(accounts.get(0));
             }
+            additionalAccountButton.setVisible(true);
             goToOperationsButton.setDisable(false);
             accountNumberLabel.setVisible(true);
             balanceLabel.setVisible(true);
@@ -73,7 +80,16 @@ public class AccountDetailsController {
     }
     private void displayAccountDetails(Account account) {
         accountNumberLabel.setText("Account Number: " + account.getAccountCode());
-        balanceLabel.setText("Balance: $" + account.getTotalAmount());
+        String currency = "";
+        Account baseAccount = account instanceof AccountDecorator ? ((AccountDecorator) account).getBaseAccount() : account;
+
+        if (baseAccount instanceof AccountEUR) {
+            currency = "€";
+        } else if (baseAccount instanceof AccountRON) {
+            currency = "RON";
+        }
+
+        balanceLabel.setText("Balance: " + currency + account.getTotalAmount());
         accountNumberLabel.setVisible(true);
         balanceLabel.setVisible(true);
     }

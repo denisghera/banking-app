@@ -5,7 +5,7 @@
 <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ro.uvt.dp.gui.DepositDialogController">
     <Label text="Deposit Funds" style="-fx-font-size: 16px;" />
+    <ComboBox fx:id="accountComboBox" promptText="Select Account" prefWidth="200" />
     <TextField fx:id="amountField" promptText="Amount" />
     <Button text="Generate PIN &amp; Deposit" onAction="#handleDeposit" />
 </VBox>
-

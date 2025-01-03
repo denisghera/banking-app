@@ -15,7 +15,7 @@
     <Label fx:id="accountNumberLabel" text="Account Number: 123456789" visible="false"/>
     <Label fx:id="balanceLabel" text="Balance: $1000.00" visible="false"/>
     <Button text="Request New Account" fx:id="requestAccountButton" onAction="#requestNewAccount" visible="false"/>
-
+    <Button text="Create Additional Account" fx:id="additionalAccountButton" onAction="#requestNewAccount" visible="false"/>
     <Separator />
 
     <HBox spacing="10" alignment="CENTER">

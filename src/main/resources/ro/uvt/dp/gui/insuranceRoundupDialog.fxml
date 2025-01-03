@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="ro.uvt.dp.gui.InsuranceRoundupDialogController">
+    <VBox spacing="10" alignment="CENTER" prefWidth="400" prefHeight="300">
+        <Label text="Select Accounts" />
+        <ScrollPane fitToWidth="true">
+            <VBox fx:id="accountList" spacing="5" />
+        </ScrollPane>
+        <HBox spacing="10" alignment="CENTER">
+            <Button text="Confirm" onAction="#handleConfirm" />
+            <Button text="Cancel" onAction="#handleCancel" />
+        </HBox>
+    </VBox>
+</AnchorPane>

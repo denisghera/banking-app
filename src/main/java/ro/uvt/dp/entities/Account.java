@@ -5,6 +5,7 @@ import ro.uvt.dp.commands.AccountOperationsInvoker;
 import ro.uvt.dp.commands.DepositCommand;
 import ro.uvt.dp.commands.RetrieveCommand;
 import ro.uvt.dp.commands.TransferCommand;
+import ro.uvt.dp.database.DatabaseConnector;
 import ro.uvt.dp.exceptions.InvalidAmountException;
 import ro.uvt.dp.exceptions.InsufficientFundsException;
 import ro.uvt.dp.memento.AccountMemento;
@@ -17,12 +18,12 @@ import ro.uvt.dp.support.Request;
 import java.util.UUID;
 
 public abstract class Account implements Operations, Transfer {
+	public boolean isTransferOperation = false;
 	private final History history = new History();
 	protected String accountCode;
 	protected double amount = 0;
 	private Client client;
 	private AccountState state;
-	private boolean initialDeposit;
 	public enum TYPE {
 		EUR, RON
 	};
@@ -32,11 +33,12 @@ public abstract class Account implements Operations, Transfer {
 	protected Account(String accountCode, double initialAmount, AccountState state) throws InvalidAmountException {
 		this.accountCode = accountCode;
 		setState(state);
-		initialDeposit = true;
-		SupportHandler customerSupport = new CustomerSupport();
-		Request request = new Request(Request.Priority.BASIC, this);
-		customerSupport.handleRequest(request);
-		deposit(initialAmount);
+		if (state instanceof ClosedAccountState) {
+			SupportHandler customerSupport = new CustomerSupport();
+			Request request = new Request(Request.Priority.BASIC, this);
+			customerSupport.handleRequest(request);
+		}
+		this.amount = initialAmount;
 	}
 	@Override
 	public double getTotalAmount() {
@@ -50,11 +52,7 @@ public abstract class Account implements Operations, Transfer {
 		history.saveState(this.saveState());
 		try {
 			if (this.request().contains("ERROR")) {
-				if (initialDeposit) {
-					initialDeposit = false;
-				} else {
-					throw new IllegalStateException("Cannot deposit into a closed account.");
-				}
+				throw new IllegalStateException("Cannot deposit into a closed account.");
 			}
 			if (sum <= 0) {
 				throw new InvalidAmountException("Cannot deposit a negative or zero sum.");
@@ -68,6 +66,9 @@ public abstract class Account implements Operations, Transfer {
 				customerSupport.handleRequest(request);
 			}
 			this.amount += sum;
+			DatabaseConnector.updateDatabaseOnOperation(this);
+			if (!isTransferOperation)
+				DatabaseConnector.saveTransaction("deposit", this.getAccountCode(), "", sum, "success");
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Deposit failed, rolling back: " + e.getMessage());
@@ -87,6 +88,9 @@ public abstract class Account implements Operations, Transfer {
 				throw new InsufficientFundsException("Insufficient funds.");
 			}
 			this.amount -= sum;
+			DatabaseConnector.updateDatabaseOnOperation(this);
+			if (!isTransferOperation)
+				DatabaseConnector.saveTransaction("retrieve", this.getAccountCode(), "", sum, "success");
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Retrieve failed, rolling back: " + e.getMessage());
@@ -115,11 +119,16 @@ public abstract class Account implements Operations, Transfer {
 			if (this.amount < sum) {
 				throw new InsufficientFundsException("Insufficient funds for transfer.");
 			}
-			if (targetAccount.getClass() != this.getClass()) {
+			if (getBaseClass(this) != getBaseClass(targetAccount)) {
 				throw new IllegalArgumentException("Accounts must be of the same type");
 			}
+			isTransferOperation = true;
 			this.retrieve(sum);
+			isTransferOperation = false;
+			targetAccount.isTransferOperation = true;
 			targetAccount.deposit(sum);
+			targetAccount.isTransferOperation = false;
+			DatabaseConnector.saveTransaction("transfer", this.getAccountCode(), targetAccount.getAccountCode(), sum, "success");
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Transfer failed, rolling back: " + e.getMessage());
@@ -149,6 +158,9 @@ public abstract class Account implements Operations, Transfer {
 	public void setState(AccountState state) {
 		this.state = state;
 	}
+	public AccountState getState() {
+		return this.state;
+	}
 	public String request() {
 		return state.handleRequest();
 	}
@@ -160,6 +172,12 @@ public abstract class Account implements Operations, Transfer {
 			this.amount = memento.getAmount();
 			setState(memento.getState());
 		}
+	}
+	private Class<?> getBaseClass(Account account) {
+		while (account instanceof AccountDecorator) {
+			account = ((AccountDecorator) account).getAccount();
+		}
+		return account.getClass();
 	}
 	@Override
 	public String toString() {

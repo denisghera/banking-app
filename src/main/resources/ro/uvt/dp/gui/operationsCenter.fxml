@@ -9,7 +9,6 @@
     <Button text="Transfer" onAction="#handleTransfer"/>
     <Button text="Deposit" onAction="#handleDeposit"/>
     <Button text="Retrieve" onAction="#handleRetrieve"/>
-    <Button text="Create Additional Account" onAction="#handleCreateAccount"/>
     <Button text="Opt for Roundup" onAction="#handleOptForRoundup"/>
     <Button text="Opt for Insurance" onAction="#handleOptForInsurance"/>
 

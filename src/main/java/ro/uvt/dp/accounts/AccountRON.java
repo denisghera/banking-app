@@ -21,6 +21,6 @@ public class AccountRON extends Account {
 	}
 	@Override
 	public String toString() {
-		return "\n\t\tAccount RON [" + super.toString() + "]";
+		return "Account RON [" + super.toString() + "]";
 	}
 }

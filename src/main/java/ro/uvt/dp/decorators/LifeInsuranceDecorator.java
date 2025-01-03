@@ -26,4 +26,8 @@ public class LifeInsuranceDecorator extends AccountDecorator {
         isInsured = insured;
         maxInsurance = maxInsured;
     }
+    @Override
+    public String toString() {
+        return "Insured [" + super.toString() + "]";
+    }
 }
