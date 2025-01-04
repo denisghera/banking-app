@@ -9,9 +9,9 @@ import ro.uvt.dp.accounts.states.ClosedAccountState;
 import ro.uvt.dp.decorators.LifeInsuranceDecorator;
 import ro.uvt.dp.decorators.RoundUpDecorator;
 import ro.uvt.dp.entities.Account;
-import ro.uvt.dp.entities.AccountDecorator;
 import ro.uvt.dp.exceptions.InvalidAmountException;
 import ro.uvt.dp.services.AccountState;
+import ro.uvt.dp.support.Request;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -391,5 +391,100 @@ public class DatabaseConnector {
         } catch (SQLException e) {
             throw new RuntimeException("Database update failed", e);
         }
+    }
+    public static Map<String, String> getUserRole(String username) {
+        String query = "SELECT support_level FROM Roles WHERE username = ?";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Map.of(
+                            "support_level", rs.getString("support_level")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static List<Map<String, String>> getTicketsForSupportLevel(String supportLevel) {
+        String query;
+        if ("customer support".equalsIgnoreCase(supportLevel)) {
+            query = "SELECT id, priority, message, timestamp, resolved, account_id FROM Tickets WHERE priority = 'NORMAL' AND resolved = 0";
+        } else if ("admin".equalsIgnoreCase(supportLevel)) {
+            query = "SELECT id, priority, message, timestamp, resolved, account_id FROM Tickets WHERE priority = 'CRITICAL' AND resolved = 0";
+        } else {
+            throw new IllegalArgumentException("Unsupported support level: " + supportLevel);
+        }
+
+        List<Map<String, String>> tickets = new ArrayList<>();
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Map<String, String> ticket = new HashMap<>();
+                ticket.put("id", String.valueOf(rs.getInt("id")));
+                ticket.put("priority", rs.getString("priority"));
+                ticket.put("message", rs.getString("message"));
+                ticket.put("timestamp", rs.getString("timestamp"));
+                ticket.put("resolved", rs.getString("resolved"));
+                ticket.put("account_id", rs.getString("account_id"));
+                tickets.add(ticket);
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to fetch tickets: " + e.getMessage());
+        }
+        return tickets;
+    }
+    public static boolean resolveTicket(String ticketId) {
+        String query = "UPDATE Tickets SET resolved = 1 WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, Integer.parseInt(ticketId));
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Failed to resolve ticket: " + e.getMessage());
+            return false;
+        }
+    }
+    public static void createTicket(Request request) {
+        String priority = request.getPriority().toString();
+        String message = request.getMessage();
+        String accountId = request.getAccountId();
+
+        String query = "INSERT INTO Tickets (priority, message, resolved, account_id) VALUES (?, ?, 0, ?)";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, priority);
+            stmt.setString(2, message);
+            stmt.setString(3, accountId);
+
+            int rowsInserted = stmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Ticket created successfully.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to create ticket: " + e.getMessage());
+        }
+    }
+    public static boolean creditAccount(String accountId, double amount) {
+        String query = "UPDATE Accounts SET balance = balance + ? WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDouble(1, amount);
+            stmt.setString(2, accountId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Failed to credit account: " + e.getMessage());
+            return false;
+        }
+        return true;
     }
 }

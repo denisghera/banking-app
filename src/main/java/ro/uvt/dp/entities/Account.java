@@ -11,8 +11,6 @@ import ro.uvt.dp.exceptions.InsufficientFundsException;
 import ro.uvt.dp.memento.AccountMemento;
 import ro.uvt.dp.memento.History;
 import ro.uvt.dp.services.*;
-import ro.uvt.dp.support.AdminSupport;
-import ro.uvt.dp.support.CustomerSupport;
 import ro.uvt.dp.support.Request;
 
 import java.util.UUID;
@@ -34,9 +32,9 @@ public abstract class Account implements Operations, Transfer {
 		this.accountCode = accountCode;
 		setState(state);
 		if (state instanceof ClosedAccountState) {
-			SupportHandler customerSupport = new CustomerSupport();
-			Request request = new Request(Request.Priority.BASIC, this);
-			customerSupport.handleRequest(request);
+			System.out.println("Generating request for activation of account...");
+			Request request = new Request(Request.Priority.NORMAL, this.getAccountCode(), "Account activation for account " + this.getAccountCode());
+			DatabaseConnector.createTicket(request);
 		}
 		this.amount = initialAmount;
 	}
@@ -57,13 +55,12 @@ public abstract class Account implements Operations, Transfer {
 			if (sum <= 0) {
 				throw new InvalidAmountException("Cannot deposit a negative or zero sum.");
 			}
-			if (sum >= 1000) {
+			if (sum >= 1000 && !isTransferOperation) {
 				System.out.println("Generating request for large deposit...");
-				Request request = new Request(Request.Priority.CRITICAL, this);
-				SupportHandler customerSupport = new CustomerSupport();
-				SupportHandler adminSupport = new AdminSupport();
-				customerSupport.setNextHandler(adminSupport);
-				customerSupport.handleRequest(request);
+				Request request = new Request(Request.Priority.CRITICAL, this.getAccountCode(), "Request for large deposit, sum: " + sum);
+				DatabaseConnector.createTicket(request);
+				DatabaseConnector.saveTransaction("deposit", this.getAccountCode(), "", sum, "approval");
+				return;
 			}
 			this.amount += sum;
 			DatabaseConnector.updateDatabaseOnOperation(this);
@@ -72,6 +69,7 @@ public abstract class Account implements Operations, Transfer {
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Deposit failed, rolling back: " + e.getMessage());
+			throw new RuntimeException("Deposit failed: " + e.getMessage());
 		}
 	}
 	@Override
@@ -94,6 +92,7 @@ public abstract class Account implements Operations, Transfer {
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Retrieve failed, rolling back: " + e.getMessage());
+			throw new RuntimeException("Retrieve failed: " + e.getMessage());
 		}
 	}
 	@Override
@@ -132,6 +131,7 @@ public abstract class Account implements Operations, Transfer {
 		} catch (Exception e) {
 			this.restoreState(history.getLastSavedState());
 			System.out.println("Transfer failed, rolling back: " + e.getMessage());
+			throw new RuntimeException("Transfer failed: " + e.getMessage());
 		}
 	}
 	public String getAccountCode() {
@@ -181,6 +181,6 @@ public abstract class Account implements Operations, Transfer {
 	}
 	@Override
 	public String toString() {
-		return "code=" + accountCode + ", amount=" + this.getTotalAmount();
+		return "code=" + accountCode + ", amount=" + this.getAmount();
 	}
 }

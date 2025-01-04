@@ -5,6 +5,7 @@ import ro.uvt.dp.entities.Bank;
 
 import java.io.*;
 import java.net.*;
+import java.util.Map;
 
 public class BankServer {
     public static String bankCode;
@@ -21,17 +22,26 @@ public class BankServer {
 
             bankCode = args[0];
             int PORT = BankPortMapper.getPortForBank(bankCode);
-            bank = Bank.getInstance(bankCode);
+
+            if ("CS".equalsIgnoreCase(bankCode)) {
+                System.out.println("Customer Support Server is starting...");
+            } else {
+                bank = Bank.getInstance(bankCode);
+                System.out.println("Bank server for bank code " + bankCode + " is up and running...");
+            }
 
             serverSocket = new ServerSocket(PORT);
-            System.out.println("Bank server for bank code " + bankCode + " is up and running...");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 clientCounter++;
                 System.out.println("New client #" + clientCounter + " connected!");
 
-                new ClientHandler(clientSocket, bank, clientCounter).start();
+                if ("CS".equalsIgnoreCase(bankCode)) {
+                    new SupportClientHandler(clientSocket, clientCounter).start();
+                } else {
+                    new ClientHandler(clientSocket, bank, clientCounter).start();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,6 +50,65 @@ public class BankServer {
         }
     }
 
+    static class SupportClientHandler extends Thread {
+        private Socket clientSocket;
+        private int clientNumber;
+
+        public SupportClientHandler(Socket socket, int clientNumber) {
+            this.clientSocket = socket;
+            this.clientNumber = clientNumber;
+        }
+
+        @Override
+        public void run() {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+
+                String request;
+                while ((request = in.readLine()) != null) {
+                    System.out.println("Client #" + clientNumber + " request: " + request);
+
+                    String[] parts = request.split("\\|");
+                    String command = parts[0];
+
+                    switch (command) {
+                        case "LOGIN":
+                            handleLogin(parts[1], parts[2], out);
+                            break;
+                        default:
+                            out.println("ERROR: Unknown command");
+                            break;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void handleLogin(String username, String password, PrintWriter out) {
+            try {
+                if (!DatabaseConnector.validateLogin(username, password)) {
+                    out.println("ERROR: Invalid credentials");
+                    return;
+                }
+
+                Map<String, String> roleDetails = DatabaseConnector.getUserRole(username);
+                if (roleDetails != null) {
+                    String supportLevel = roleDetails.get("support_level");
+                    if ("customer support".equalsIgnoreCase(supportLevel) || "admin".equalsIgnoreCase(supportLevel)) {
+                        out.println("SUCCESS|" + supportLevel);
+                        System.out.println("Support client #" + clientNumber + " (" + username + ") logged in.");
+                        return;
+                    }
+                }
+
+                out.println("ERROR: Unauthorized access for support");
+            } catch (Exception e) {
+                out.println("ERROR: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
     static class ClientHandler extends Thread {
         private Socket clientSocket;
         private PrintWriter out;
@@ -47,7 +116,7 @@ public class BankServer {
         private Bank bank;
         private int clientNumber;
 
-        public ClientHandler(Socket socket, Bank bank , int clientNumber) {
+        public ClientHandler(Socket socket, Bank bank, int clientNumber) {
             this.clientSocket = socket;
             this.bank = bank;
             this.clientNumber = clientNumber;
@@ -100,7 +169,7 @@ public class BankServer {
                 }
 
                 out.println("SUCCESS: Login successful");
-                System.out.println("Client #" + clientNumber + " (" + username + ") successfully logged in.");
+                System.out.println("Client #" + clientNumber + " (" + username + ") logged in.");
             } catch (Exception e) {
                 out.println("ERROR: " + e.getMessage());
                 e.printStackTrace();
@@ -130,7 +199,7 @@ public class BankServer {
                     return;
                 }
                 out.println("SUCCESS: User registered successfully");
-                System.out.println("Client #" + clientNumber + " (" + username + ") successfully registered.");
+                System.out.println("Client #" + clientNumber + " (" + username + ") registered.");
             } catch (Exception e) {
                 out.println("ERROR: " + e.getMessage());
                 e.printStackTrace();

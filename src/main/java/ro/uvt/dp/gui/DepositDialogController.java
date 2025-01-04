@@ -69,7 +69,12 @@ public class DepositDialogController implements DialogController {
         AccountOperationsInvoker invoker = new AccountOperationsInvoker();
         try {
             selectedAccount.depositUsingCommand(invoker, amount);
-            showSuccess("Deposit successful. Generated PIN: " + generatePin());
+            if (amount < 1000)
+                showSuccess("Deposit successful. Generated PIN: " + generatePin());
+            else
+                showSuccess("Large deposit ticket created. You must wait for it to be approved!");
+        } catch (RuntimeException e) {
+            showError(e.getMessage() + "\nTry again later!");
         } catch (Exception e) {
             showError("Deposit failed: " + e.getMessage());
         }

@@ -9,6 +9,7 @@ public class BankPortMapper {
     static {
         bankPortMap.put("UVT_DP", 12345);
         bankPortMap.put("TEST", 12346);
+        bankPortMap.put("CS", 12347);
     }
 
     public static Integer getPortForBank(String bankCode) {

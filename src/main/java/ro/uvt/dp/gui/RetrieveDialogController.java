@@ -78,6 +78,8 @@ public class RetrieveDialogController implements DialogController {
             selectedAccount.retrieveUsingCommand(invoker, amount);
 
             showSuccess("Retrieve successful. Generated PIN: " + pin);
+        } catch (RuntimeException e) {
+            showError(e.getMessage() + "\nTry again later!");
         } catch (Exception e) {
             showError("Retrieve failed: " + e.getMessage());
         }

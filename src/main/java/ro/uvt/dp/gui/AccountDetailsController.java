@@ -89,7 +89,7 @@ public class AccountDetailsController {
             currency = "RON";
         }
 
-        balanceLabel.setText("Balance: " + currency + account.getTotalAmount());
+        balanceLabel.setText("Balance: " + currency + account.getAmount());
         accountNumberLabel.setVisible(true);
         balanceLabel.setVisible(true);
     }

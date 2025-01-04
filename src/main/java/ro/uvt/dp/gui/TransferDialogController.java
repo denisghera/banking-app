@@ -92,6 +92,8 @@ public class TransferDialogController implements DialogController {
         try {
             senderAccount.transferUsingCommand(invoker, receiverAccount, amount);
             showSuccess("Transfer successful. Generated PIN: " + generatePin());
+        } catch (RuntimeException e) {
+            showError(e.getMessage() + "\nTry again later!");
         } catch (Exception e) {
             showError("Transfer failed: " + e.getMessage());
         }

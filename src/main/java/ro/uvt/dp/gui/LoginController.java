@@ -32,13 +32,30 @@ public class LoginController {
         String password = passwordField.getText();
 
         Map<String, String> userDetails = DatabaseConnector.getUserDetails(username);
+        Map<String, String> roleDetails = DatabaseConnector.getUserRole(username);
+
         if (userDetails == null) {
+            if (roleDetails != null) {
+                String supportLevel = roleDetails.get("support_level");
+                if ("customer support".equalsIgnoreCase(supportLevel) || "admin".equalsIgnoreCase(supportLevel)) {
+                    try (NetworkClient networkClient = new NetworkClient("CS")) {
+                        String response = networkClient.login(username, password);
+                        if (response.startsWith("SUCCESS")) {
+                            switchToSupportPage(username, supportLevel);
+                        } else {
+                            showError(response);
+                        }
+                    } catch (IOException e) {
+                        showError("Error: " + e.getMessage());
+                    }
+                    return;
+                }
+            }
             showError("Invalid credentials!");
             return;
         }
 
         String bankID = userDetails.get("bankID");
-
         try (NetworkClient networkClient = new NetworkClient(bankID)) {
             String response = networkClient.login(username, password);
 
@@ -50,7 +67,6 @@ public class LoginController {
                 alert.showAndWait();
 
                 Client client = buildClient(userDetails);
-
                 switchToMainPage(client);
             } else {
                 showError(response);
@@ -58,6 +74,18 @@ public class LoginController {
         } catch (IOException | LimitExceededException e) {
             showError("Error: " + e.getMessage());
         }
+    }
+    private void switchToSupportPage(String username, String supportLevel) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("supportPage.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+
+        SupportPageController controller = fxmlLoader.getController();
+        controller.initialize(username, supportLevel);
+
+        Stage stage = (Stage) usernameField.getScene().getWindow();
+        stage.setTitle("Customer Support");
+        stage.setScene(scene);
+        stage.show();
     }
     private Client buildClient(Map<String, String> userDetails) throws LimitExceededException {
         List<Account> accounts = DatabaseConnector.getClientAccounts(userDetails.get("username"));

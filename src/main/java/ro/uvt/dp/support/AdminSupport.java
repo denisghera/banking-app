@@ -1,7 +1,7 @@
 package ro.uvt.dp.support;
 
-import ro.uvt.dp.entities.Account;
 import ro.uvt.dp.services.SupportHandler;
+import ro.uvt.dp.database.DatabaseConnector;
 
 public class AdminSupport implements SupportHandler {
     private SupportHandler nextHandler;
@@ -9,15 +9,25 @@ public class AdminSupport implements SupportHandler {
     public void setNextHandler(SupportHandler nextHandler) {
         // No next handler -> leave empty for now
     }
-    public void handleRequest(Request request) {
-        if(request.getPriority() == Request.Priority.CRITICAL) {
-            Account account = request.getAccount();
-            if (account != null) {
-                System.out.println("Admin Support: Handling critical request for account: " + account.getAccountCode());
-                // Perform additional actions if needed
+
+    public boolean handleRequest(Request request) {
+        if (request.getPriority() == Request.Priority.CRITICAL) {
+            String message = request.getMessage();
+
+            if (message != null && message.toLowerCase().contains("large deposit")) {
+                String accountId = request.getAccountId();
+
+                try {
+                    double depositAmount = request.getDepositSum();
+                    return DatabaseConnector.creditAccount(accountId, depositAmount);
+                } catch (Exception e) {
+                    System.err.println("Admin Support: Failed to credit account: " + e.getMessage());
+                    return false;
+                }
             }
-        } else if (nextHandler != null){
-            System.out.println("Request cannot be handled!");
+        } else if (nextHandler != null) {
+            nextHandler.handleRequest(request);
         }
+        return true;
     }
 }
